@@ -15,16 +15,6 @@
  */
 package org.apache.ibatis.builder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.decorators.LruCache;
 import org.apache.ibatis.cache.impl.PerpetualCache;
@@ -48,6 +38,16 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * @author Clinton Begin
@@ -425,7 +425,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
   private Class<?> resolveResultJavaType(Class<?> resultType, String property, Class<?> javaType) {
     if (javaType == null && property != null) {
       try {
-        MetaClass metaResultType = MetaClass.forClass(resultType, configuration.getReflectorFactory());
+        MetaClass metaResultType = MetaClass.forClass(resultType, configuration.getReflectorFactory());//封装了resultType对应的Refactor
         javaType = metaResultType.getSetterType(property);
       } catch (Exception e) {
         //ignore, following null check statement will deal with the situation

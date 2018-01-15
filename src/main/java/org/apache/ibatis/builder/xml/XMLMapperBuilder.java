@@ -113,9 +113,9 @@ public class XMLMapperBuilder extends BaseBuilder {
       cacheRefElement(context.evalNode("cache-ref"));
       cacheElement(context.evalNode("cache"));
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
-      resultMapElements(context.evalNodes("/mapper/resultMap"));
-      sqlElement(context.evalNodes("/mapper/sql"));
-      buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
+      resultMapElements(context.evalNodes("/mapper/resultMap"));//解析resultMap元素，映射成ResultMap对象,放到configrator里面
+      sqlElement(context.evalNodes("/mapper/sql"));//解析sql元素，以id+对应xnode的结构放到sqlFragments中（Map<String,XNode>）
+      buildStatementFromContext(context.evalNodes("select|insert|update|delete"));//
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
     }
@@ -341,7 +341,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     for (XNode context : list) {
       String databaseId = context.getStringAttribute("databaseId");
       String id = context.getStringAttribute("id");
-      id = builderAssistant.applyCurrentNamespace(id, false);
+      id = builderAssistant.applyCurrentNamespace(id, false);//返回命名空间+id名称
       if (databaseIdMatchesCurrent(id, databaseId, requiredDatabaseId)) {
         sqlFragments.put(id, context);
       }
