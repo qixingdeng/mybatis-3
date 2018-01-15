@@ -15,6 +15,12 @@
  */
 package org.apache.ibatis.reflection;
 
+import org.apache.ibatis.reflection.invoker.GetFieldInvoker;
+import org.apache.ibatis.reflection.invoker.Invoker;
+import org.apache.ibatis.reflection.invoker.MethodInvoker;
+import org.apache.ibatis.reflection.invoker.SetFieldInvoker;
+import org.apache.ibatis.reflection.property.PropertyNamer;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -31,12 +37,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.ibatis.reflection.invoker.GetFieldInvoker;
-import org.apache.ibatis.reflection.invoker.Invoker;
-import org.apache.ibatis.reflection.invoker.MethodInvoker;
-import org.apache.ibatis.reflection.invoker.SetFieldInvoker;
-import org.apache.ibatis.reflection.property.PropertyNamer;
 
 /**
  * This class represents a cached set of class definition information that
@@ -92,7 +92,7 @@ public class Reflector {
   }
 
   private void addGetMethods(Class<?> cls) {
-    Map<String, List<Method>> conflictingGetters = new HashMap<String, List<Method>>();
+    Map<String, List<Method>> conflictingGetters = new HashMap<String, List<Method>>();//注意：key是属性名称，value是对应get方法的list，意味着可能有多个method
     Method[] methods = getClassMethods(cls);
     for (Method method : methods) {
       if (method.getParameterTypes().length > 0) {
@@ -101,11 +101,11 @@ public class Reflector {
       String name = method.getName();
       if ((name.startsWith("get") && name.length() > 3)
           || (name.startsWith("is") && name.length() > 2)) {
-        name = PropertyNamer.methodToProperty(name);
-        addMethodConflict(conflictingGetters, name, method);
+        name = PropertyNamer.methodToProperty(name);//将getUser变成user，获取属性名称
+        addMethodConflict(conflictingGetters, name, method);//得到的是有冲突的get方法
       }
     }
-    resolveGetterConflicts(conflictingGetters);
+    resolveGetterConflicts(conflictingGetters);//解决冲突，boolean类型取isXXX的method；其他的取返回值是子类的method
   }
 
   private void resolveGetterConflicts(Map<String, List<Method>> conflictingGetters) {

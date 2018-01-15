@@ -15,17 +15,6 @@
  */
 package org.apache.ibatis.builder.xml;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.ibatis.builder.BaseBuilder;
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.builder.CacheRefResolver;
@@ -46,6 +35,17 @@ import org.apache.ibatis.parsing.XPathParser;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Clinton Begin
@@ -252,26 +252,37 @@ public class XMLMapperBuilder extends BaseBuilder {
     return resultMapElement(resultMapNode, Collections.<ResultMapping> emptyList());
   }
 
+
+  /*
+  * <!ELEMENT resultMap (constructor?,id*,result*,association*,collection*, discriminator?)>
+    <!ATTLIST resultMap
+    id CDATA #REQUIRED
+    type CDATA #REQUIRED
+    extends CDATA #IMPLIED
+    autoMapping (true|false) #IMPLIED
+    >
+  * */
+
   private ResultMap resultMapElement(XNode resultMapNode, List<ResultMapping> additionalResultMappings) throws Exception {
     ErrorContext.instance().activity("processing " + resultMapNode.getValueBasedIdentifier());
-    String id = resultMapNode.getStringAttribute("id",
+    String id = resultMapNode.getStringAttribute("id",//resultMap属性
         resultMapNode.getValueBasedIdentifier());
-    String type = resultMapNode.getStringAttribute("type",
+    String type = resultMapNode.getStringAttribute("type",//resultMap属性
         resultMapNode.getStringAttribute("ofType",
             resultMapNode.getStringAttribute("resultType",
                 resultMapNode.getStringAttribute("javaType"))));
-    String extend = resultMapNode.getStringAttribute("extends");
-    Boolean autoMapping = resultMapNode.getBooleanAttribute("autoMapping");
+    String extend = resultMapNode.getStringAttribute("extends");//resultMap属性
+    Boolean autoMapping = resultMapNode.getBooleanAttribute("autoMapping");//resultMap属性
     Class<?> typeClass = resolveClass(type);
-    Discriminator discriminator = null;
+    Discriminator discriminator = null;//resultMap子元素discriminator
     List<ResultMapping> resultMappings = new ArrayList<ResultMapping>();
     resultMappings.addAll(additionalResultMappings);
-    List<XNode> resultChildren = resultMapNode.getChildren();
-    for (XNode resultChild : resultChildren) {
-      if ("constructor".equals(resultChild.getName())) {
-        processConstructorElement(resultChild, typeClass, resultMappings);
+    List<XNode> resultChildren = resultMapNode.getChildren();//resultMap子元素集合
+    for (XNode resultChild : resultChildren) {//循环解析resultMap的子元素
+      if ("constructor".equals(resultChild.getName())) {//resultMap子元素constructor
+        processConstructorElement(resultChild, typeClass, resultMappings);//解析子元素constructor
       } else if ("discriminator".equals(resultChild.getName())) {
-        discriminator = processDiscriminatorElement(resultChild, typeClass, resultMappings);
+        discriminator = processDiscriminatorElement(resultChild, typeClass, resultMappings);//解析子元素discriminator
       } else {
         List<ResultFlag> flags = new ArrayList<ResultFlag>();
         if ("id".equals(resultChild.getName())) {
@@ -357,6 +368,32 @@ public class XMLMapperBuilder extends BaseBuilder {
     return true;
   }
 
+
+  /*
+  * <!ELEMENT result EMPTY>
+    <!ATTLIST result
+    property CDATA #IMPLIED
+    javaType CDATA #IMPLIED
+    column CDATA #IMPLIED
+    jdbcType CDATA #IMPLIED
+    typeHandler CDATA #IMPLIED
+    >
+
+    <!ELEMENT collection (constructor?,id*,result*,association*,collection*, discriminator?)>
+    <!ATTLIST collection
+    property CDATA #REQUIRED
+    column CDATA #IMPLIED
+    javaType CDATA #IMPLIED
+    ofType CDATA #IMPLIED
+    jdbcType CDATA #IMPLIED
+    select CDATA #IMPLIED
+    resultMap CDATA #IMPLIED
+    typeHandler CDATA #IMPLIED
+    notNullColumn CDATA #IMPLIED
+    columnPrefix CDATA #IMPLIED
+    >
+  */
+
   private ResultMapping buildResultMappingFromContext(XNode context, Class<?> resultType, List<ResultFlag> flags) throws Exception {
     String property;
     if (flags.contains(ResultFlag.CONSTRUCTOR)) {
@@ -373,9 +410,9 @@ public class XMLMapperBuilder extends BaseBuilder {
     String notNullColumn = context.getStringAttribute("notNullColumn");
     String columnPrefix = context.getStringAttribute("columnPrefix");
     String typeHandler = context.getStringAttribute("typeHandler");
-    String resultSet = context.getStringAttribute("resultSet");
-    String foreignColumn = context.getStringAttribute("foreignColumn");
-    boolean lazy = "lazy".equals(context.getStringAttribute("fetchType", configuration.isLazyLoadingEnabled() ? "lazy" : "eager"));
+    String resultSet = context.getStringAttribute("resultSet");//最新的dtd里面没有这个元素
+    String foreignColumn = context.getStringAttribute("foreignColumn");//最新的dtd里面没有这个元素
+    boolean lazy = "lazy".equals(context.getStringAttribute("fetchType", configuration.isLazyLoadingEnabled() ? "lazy" : "eager"));//最新的dtd里面没有这个元素fetchType
     Class<?> javaTypeClass = resolveClass(javaType);
     @SuppressWarnings("unchecked")
     Class<? extends TypeHandler<?>> typeHandlerClass = (Class<? extends TypeHandler<?>>) resolveClass(typeHandler);
